@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Full screen video -->
+    <ImageView
+        android:id="@+id/iv_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter" />
+
+    <!-- Navigation bar at bottom -->
+    <LinearLayout
+        android:id="@+id/nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom"
+        android:background="#BB000000"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="ATRAS"
+            android:textColor="#FFFFFF"
+            android:background="@null"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btn_home"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="INICIO"
+            android:textColor="#FFFFFF"
+            android:background="@null"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btn_recents"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="RECIENTES"
+            android:textColor="#FFFFFF"
+            android:background="@null"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Connection overlay -->
+    <LinearLayout
+        android:id="@+id/ll_connect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="#0C0F17"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RadioCast"
+            android:textSize="28sp"
+            android:textColor="#00E5FF"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/et_phone_ip"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="IP del telefono"
+            android:inputType="numberDecimal"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#00E5FF"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btn_connect"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="CONECTAR"
+            android:backgroundTint="#00E5FF"
+            android:textColor="#0C0F17"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="14sp"
+            android:textColor="#FF5252"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+</FrameLayout>

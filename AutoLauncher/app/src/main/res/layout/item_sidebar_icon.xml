@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="44dp"
+    android:layout_height="44dp"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="14dp"
+    android:layout_marginBottom="14dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+    android:focusable="true">
+
+    <View
+        android:id="@+id/sidebarIconBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_circle_white" />
+
+    <ImageView
+        android:id="@+id/sidebarIconGlyph"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_navigation" />
+
+</FrameLayout>

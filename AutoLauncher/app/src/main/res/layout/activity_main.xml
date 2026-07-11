@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_root_gradient">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_wave_lines"
+        android:alpha="0.9" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <!-- Columna lateral izquierda: estado + accesos rápidos -->
+        <LinearLayout
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- Estado: señal, batería, hora, notificaciones -->
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_signal"
+                android:layout_marginTop="4dp" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_battery"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/clockText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5:39"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:layout_marginTop="6dp" />
+
+            <TextView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:text="1"
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:background="@drawable/bg_circle_white"
+                android:layout_marginTop="8dp" />
+
+            <!-- Accesos rápidos -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/sidebarRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="10dp"
+                android:overScrollMode="never" />
+
+            <!-- Botón grilla de apps (abajo, fijo) -->
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginBottom="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_apps" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <!-- Panel principal: grilla de apps -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_panel_rounded" />
+
+            <!-- Flechas arriba/abajo -->
+            <ImageView
+                android:id="@+id/arrowUp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="top|start"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_expand_less" />
+
+            <ImageView
+                android:id="@+id/arrowDown"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_expand_more" />
+
+            <!-- Indicador de scroll -->
+            <View
+                android:layout_width="3dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="8dp"
+                android:background="@color/scrollbar" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/appsGridRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

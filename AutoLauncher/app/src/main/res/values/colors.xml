@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_root">#0A0E14</color>
+    <color name="bg_panel_start">#0B2A33</color>
+    <color name="bg_panel_end">#08131F</color>
+    <color name="sidebar_bg">#111418</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B8C2CC</color>
+    <color name="icon_teal">#1FA7D8</color>
+    <color name="icon_blue">#1E5FD1</color>
+    <color name="icon_orange">#F1701A</color>
+    <color name="icon_green">#3BC855</color>
+    <color name="icon_red">#E0342A</color>
+    <color name="icon_white_bg">#FFFFFF</color>
+    <color name="scrollbar">#33FFFFFF</color>
+</resources>
