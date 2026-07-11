@@ -2,72 +2,144 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#121212">
 
-    <!-- Full screen video -->
-    <ImageView
-        android:id="@+id/iv_screen"
+    <!-- Connected UI: Split screen (hidden when disconnected) -->
+    <LinearLayout
+        android:id="@+id/connected_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
-
-    <!-- App launcher bar at top (Android Auto style) -->
-    <LinearLayout
-        android:id="@+id/launcher_bar"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_gravity="top"
-        android:background="#BB000000"
         android:orientation="horizontal"
-        android:gravity="center"
         android:visibility="gone">
 
-        <Button
-            android:id="@+id/btn_launch_maps"
+        <!-- Left half: Phone screen mirror -->
+        <ImageView
+            android:id="@+id/iv_screen"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="MAPS"
-            android:textColor="#3BC855"
-            android:background="@null"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:layout_weight="0.55"
+            android:scaleType="fitCenter"
+            android:background="#000000" />
 
-        <Button
-            android:id="@+id/btn_launch_youtube"
+        <!-- Right half: Android Auto-style launcher -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="YT"
-            android:textColor="#E0342A"
-            android:background="@null"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:layout_weight="0.45"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:gravity="center">
 
-        <Button
-            android:id="@+id/btn_launch_waze"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="WAZE"
-            android:textColor="#33CCFF"
-            android:background="@null"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RadioCast"
+                android:textColor="#00E5FF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
 
-        <Button
-            android:id="@+id/btn_launch_music"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="MUSICA"
-            android:textColor="#F1701A"
-            android:background="@null"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            <!-- Maps tile -->
+            <FrameLayout
+                android:id="@+id/tile_maps"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/tile_bg_maps"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MAPS"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Navegacion"
+                        android:textColor="#AAFFFFFF"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- Waze tile -->
+            <FrameLayout
+                android:id="@+id/tile_waze"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/tile_bg_waze"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="WAZE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Trafico en vivo"
+                        android:textColor="#AAFFFFFF"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- YouTube tile -->
+            <FrameLayout
+                android:id="@+id/tile_youtube"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/tile_bg_yt"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="YOUTUBE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Videos y Musica"
+                        android:textColor="#AAFFFFFF"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Navigation bar at bottom -->
+    <!-- Bottom navigation bar -->
     <LinearLayout
         android:id="@+id/nav_bar"
         android:layout_width="match_parent"

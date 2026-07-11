@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int RECONNECT_MAX_DELAY = 30000;
 
     private ImageView ivScreen;
-    private LinearLayout llConnect, navBar, launcherBar;
+    private LinearLayout llConnect, navBar, connectedContainer;
     private EditText etPhoneIp;
     private TextView tvStatus;
 
@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private Thread reconnectThread;
     private String phoneIp = "";
     private int reconnectDelay = 1000;
-    private boolean firstLaunchDone = false;
 
     private float touchStartX, touchStartY;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         ivScreen  = findViewById(R.id.iv_screen);
         llConnect = findViewById(R.id.ll_connect);
         navBar    = findViewById(R.id.nav_bar);
-        launcherBar = findViewById(R.id.launcher_bar);
+        connectedContainer = findViewById(R.id.connected_container);
         etPhoneIp = findViewById(R.id.et_phone_ip);
         tvStatus  = findViewById(R.id.tv_status);
 
@@ -87,17 +86,9 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_home).setOnClickListener(v -> sendTouch("HOME"));
         findViewById(R.id.btn_recents).setOnClickListener(v -> sendTouch("RECENTS"));
 
-        findViewById(R.id.btn_launch_maps).setOnClickListener(v -> sendTouch("MAPS"));
-        findViewById(R.id.btn_launch_youtube).setOnClickListener(v -> sendTouch("YOUTUBE"));
-        findViewById(R.id.btn_launch_waze).setOnClickListener(v -> sendTouch("WAZE"));
-        findViewById(R.id.btn_launch_music).setOnClickListener(v -> {
-            Intent intent = new Intent(android.content.Intent.ACTION_MAIN);
-            intent.addCategory(android.content.Intent.CATEGORY_APP_MUSIC);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try { startActivity(intent); } catch (Exception e) {
-                sendTouch("MUSIC");
-            }
-        });
+        findViewById(R.id.tile_maps).setOnClickListener(v -> sendTouch("MAPS"));
+        findViewById(R.id.tile_waze).setOnClickListener(v -> sendTouch("WAZE"));
+        findViewById(R.id.tile_youtube).setOnClickListener(v -> sendTouch("YOUTUBE"));
 
         ivScreen.setOnTouchListener((v, event) -> {
             if (!connected) return false;
@@ -236,13 +227,9 @@ public class MainActivity extends AppCompatActivity {
                 mainHandler.post(() -> {
                     setStatus("Conectado", 0xFF4CAF50);
                     llConnect.setVisibility(View.GONE);
+                    connectedContainer.setVisibility(View.VISIBLE);
                     navBar.setVisibility(View.VISIBLE);
-                    launcherBar.setVisibility(View.VISIBLE);
                     ivScreen.setImageBitmap(null);
-                    if (!firstLaunchDone) {
-                        firstLaunchDone = true;
-                        sendTouch("MAPS");
-                    }
                 });
 
                 startVideo();
@@ -403,8 +390,8 @@ public class MainActivity extends AppCompatActivity {
         mainHandler.post(() -> {
             setStatus("Desconectado", 0xFFFF5252);
             llConnect.setVisibility(View.VISIBLE);
+            connectedContainer.setVisibility(View.GONE);
             navBar.setVisibility(View.GONE);
-            launcherBar.setVisibility(View.GONE);
             ivScreen.setImageBitmap(null);
             if (shouldReconnect && !phoneIp.isEmpty()) {
                 startReconnect();
