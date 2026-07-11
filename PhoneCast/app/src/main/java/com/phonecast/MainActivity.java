@@ -1,7 +1,10 @@
 package com.phonecast;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -17,6 +20,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,11 +38,16 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "PhoneCast";
     private static final int REQ_PROJECTION = 1001;
+    private static final int REQ_AUDIO = 1002;
 
     private TextView tvStatus, tvIp, tvAccessibilityStatus;
     private Button btnStart, btnStop;
     private MediaProjectionManager mpm;
     private ActivityResultLauncher<Intent> projectionLauncher;
+    private ActivityResultLauncher<String> audioPermissionLauncher;
+
+    private Intent pendingProjectionData;
+    private int pendingProjectionCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +81,37 @@ public class MainActivity extends AppCompatActivity {
 
         mpm = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
 
+        audioPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            granted -> {
+                if (granted && pendingProjectionData != null) {
+                    startCastService(pendingProjectionCode, pendingProjectionData);
+                    pendingProjectionData = null;
+                } else if (!granted) {
+                    Toast.makeText(this, "Permiso de micrófono necesario para audio", Toast.LENGTH_LONG).show();
+                    if (pendingProjectionData != null) {
+                        startCastService(pendingProjectionCode, pendingProjectionData);
+                        pendingProjectionData = null;
+                    }
+                }
+            }
+        );
+
         projectionLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 Log.d(TAG, "Projection result: " + result.getResultCode());
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    startCastService(result.getResultCode(), result.getData());
+                    pendingProjectionCode = result.getResultCode();
+                    pendingProjectionData = result.getData();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+                    } else {
+                        startCastService(pendingProjectionCode, pendingProjectionData);
+                        pendingProjectionData = null;
+                    }
                 } else {
                     Toast.makeText(this, "Acepta el permiso de captura de pantalla", Toast.LENGTH_LONG).show();
                 }

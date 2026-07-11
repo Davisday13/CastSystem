@@ -10,8 +10,11 @@ import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
@@ -44,6 +47,7 @@ public class CastService extends Service {
     private static final String TAG = "CastService";
     private static final int PORT_VIDEO = 8080;
     private static final int PORT_TOUCH = 8081;
+    private static final int PORT_AUDIO = 8082;
     private static final String CHANNEL_ID = "cast_channel";
 
     private MediaProjection mediaProjection;
@@ -51,6 +55,7 @@ public class CastService extends Service {
     private ImageReader imageReader;
     private ServerSocket videoServer;
     private ServerSocket touchServer;
+    private ServerSocket audioServer;
     private final AtomicReference<byte[]> latestFrame = new AtomicReference<>();
     private volatile boolean running = false;
     private HandlerThread handlerThread;
@@ -89,6 +94,7 @@ public class CastService extends Service {
 
             new Thread(this::startVideoServer).start();
             new Thread(this::startTouchServer).start();
+            new Thread(this::startAudioServer).start();
             return START_STICKY;
 
         } catch (Throwable t) {
@@ -373,6 +379,61 @@ public class CastService extends Service {
         } catch (Exception ignored) {}
     }
 
+    private void startAudioServer() {
+        try {
+            audioServer = new ServerSocket(PORT_AUDIO);
+            audioServer.setReuseAddress(true);
+            Log.d(TAG, "Audio server escuchando en puerto " + PORT_AUDIO);
+            while (running) {
+                Socket client = audioServer.accept();
+                Log.d(TAG, "Audio cliente conectado");
+                handleAudioClient(client);
+            }
+        } catch (IOException e) {
+            if (running) Log.e(TAG, "Audio server error", e);
+        }
+    }
+
+    private void handleAudioClient(Socket client) {
+        AudioRecord audioRecord = null;
+        try {
+            int sampleRate = 44100;
+            int bufferSize = Math.max(
+                AudioRecord.getMinBufferSize(sampleRate,
+                    AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT),
+                4096);
+
+            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                sampleRate, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+
+            if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                Log.e(TAG, "AudioRecord no inicializado — ¿permiso denegado?");
+                return;
+            }
+
+            OutputStream out = client.getOutputStream();
+            audioRecord.startRecording();
+            byte[] buffer = new byte[bufferSize];
+
+            while (running && !client.isClosed()) {
+                int read = audioRecord.read(buffer, 0, buffer.length);
+                if (read > 0) {
+                    out.write(buffer, 0, read);
+                    out.flush();
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Audio client desconectado");
+        } finally {
+            if (audioRecord != null) {
+                try { audioRecord.stop(); } catch (Exception ignored) {}
+                audioRecord.release();
+            }
+            try { client.close(); } catch (IOException ignored) {}
+        }
+    }
+
     private void cleanup() {
         running = false;
         if (handlerThread != null) {
@@ -386,6 +447,7 @@ public class CastService extends Service {
         if (imageReader != null) { imageReader.close(); imageReader = null; }
         try { if (videoServer != null) { videoServer.close(); videoServer = null; } } catch (IOException ignored) {}
         try { if (touchServer != null) { touchServer.close(); touchServer = null; } } catch (IOException ignored) {}
+        try { if (audioServer != null) { audioServer.close(); audioServer = null; } } catch (IOException ignored) {}
         latestFrame.set(null);
     }
 

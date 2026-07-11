@@ -1,7 +1,11 @@
 package com.radiocast;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,12 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "RadioCast";
     private static final int PORT_VIDEO = 8080;
     private static final int PORT_TOUCH = 8081;
+    private static final int PORT_AUDIO = 8082;
     private static final int KEEPALIVE_INTERVAL = 5000;
     private static final int RECONNECT_BASE_DELAY = 2000;
     private static final int RECONNECT_MAX_DELAY = 30000;
 
     private ImageView ivScreen;
-    private LinearLayout llConnect, navBar;
+    private LinearLayout llConnect, navBar, launcherBar;
     private EditText etPhoneIp;
     private TextView tvStatus;
 
@@ -47,11 +52,13 @@ public class MainActivity extends AppCompatActivity {
     private Socket touchSocket;
     private OutputStream touchOut;
     private Thread videoThread;
+    private Thread audioThread;
     private Thread discoveryThread;
     private Thread keepaliveThread;
     private Thread reconnectThread;
     private String phoneIp = "";
     private int reconnectDelay = 1000;
+    private boolean firstLaunchDone = false;
 
     private float touchStartX, touchStartY;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         ivScreen  = findViewById(R.id.iv_screen);
         llConnect = findViewById(R.id.ll_connect);
         navBar    = findViewById(R.id.nav_bar);
+        launcherBar = findViewById(R.id.launcher_bar);
         etPhoneIp = findViewById(R.id.et_phone_ip);
         tvStatus  = findViewById(R.id.tv_status);
 
@@ -78,6 +86,18 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> sendTouch("BACK"));
         findViewById(R.id.btn_home).setOnClickListener(v -> sendTouch("HOME"));
         findViewById(R.id.btn_recents).setOnClickListener(v -> sendTouch("RECENTS"));
+
+        findViewById(R.id.btn_launch_maps).setOnClickListener(v -> sendTouch("MAPS"));
+        findViewById(R.id.btn_launch_youtube).setOnClickListener(v -> sendTouch("YOUTUBE"));
+        findViewById(R.id.btn_launch_waze).setOnClickListener(v -> sendTouch("WAZE"));
+        findViewById(R.id.btn_launch_music).setOnClickListener(v -> {
+            Intent intent = new Intent(android.content.Intent.ACTION_MAIN);
+            intent.addCategory(android.content.Intent.CATEGORY_APP_MUSIC);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try { startActivity(intent); } catch (Exception e) {
+                sendTouch("MUSIC");
+            }
+        });
 
         ivScreen.setOnTouchListener((v, event) -> {
             if (!connected) return false;
@@ -217,10 +237,16 @@ public class MainActivity extends AppCompatActivity {
                     setStatus("Conectado", 0xFF4CAF50);
                     llConnect.setVisibility(View.GONE);
                     navBar.setVisibility(View.VISIBLE);
+                    launcherBar.setVisibility(View.VISIBLE);
                     ivScreen.setImageBitmap(null);
+                    if (!firstLaunchDone) {
+                        firstLaunchDone = true;
+                        sendTouch("MAPS");
+                    }
                 });
 
                 startVideo();
+                startAudio();
                 startKeepalive();
             } catch (Exception e) {
                 connected = false;
@@ -328,16 +354,57 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ignored) {}
     }
 
+    private void startAudio() {
+        audioThread = new Thread(() -> {
+            Socket as = null;
+            try {
+                as = new Socket();
+                as.connect(new InetSocketAddress(phoneIp, PORT_AUDIO), 5000);
+                InputStream in = as.getInputStream();
+
+                int sampleRate = 44100;
+                int bufferSize = Math.max(
+                    AudioTrack.getMinBufferSize(sampleRate,
+                        AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT),
+                    4096);
+
+                AudioTrack audioTrack = new AudioTrack(
+                    AudioManager.STREAM_MUSIC, sampleRate,
+                    AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                    bufferSize, AudioTrack.MODE_STREAM);
+                audioTrack.play();
+
+                byte[] buffer = new byte[bufferSize];
+                while (connected && !Thread.currentThread().isInterrupted()) {
+                    int read = in.read(buffer);
+                    if (read < 0) break;
+                    audioTrack.write(buffer, 0, read);
+                }
+
+                audioTrack.stop();
+                audioTrack.release();
+            } catch (Exception e) {
+                Log.d(TAG, "Audio error: " + e.getMessage());
+            } finally {
+                try { if (as != null) as.close(); } catch (IOException ignored) {}
+            }
+        });
+        audioThread.setDaemon(true);
+        audioThread.start();
+    }
+
     private void disconnect() {
         connected = false;
         try { if (touchSocket != null) touchSocket.close(); } catch (IOException ignored) {}
         touchOut = null;
         if (videoThread != null) { videoThread.interrupt(); videoThread = null; }
+        if (audioThread != null) { audioThread.interrupt(); audioThread = null; }
         if (keepaliveThread != null) { keepaliveThread.interrupt(); keepaliveThread = null; }
         mainHandler.post(() -> {
             setStatus("Desconectado", 0xFFFF5252);
             llConnect.setVisibility(View.VISIBLE);
             navBar.setVisibility(View.GONE);
+            launcherBar.setVisibility(View.GONE);
             ivScreen.setImageBitmap(null);
             if (shouldReconnect && !phoneIp.isEmpty()) {
                 startReconnect();
@@ -376,6 +443,7 @@ public class MainActivity extends AppCompatActivity {
         if (discoveryThread != null) discoveryThread.interrupt();
         try { if (touchSocket != null) touchSocket.close(); } catch (IOException ignored) {}
         if (videoThread != null) videoThread.interrupt();
+        if (audioThread != null) audioThread.interrupt();
         super.onDestroy();
     }
 }
